@@ -37,6 +37,14 @@ add_executable(dataset_value_test
         tests/test_dataset_value.cpp
 )
 
+add_executable(dataset_test
+        tests/test_dataset.cpp
+)
+
 # Тесты и ведомые зависимости теперь ссылаются на единую библиотеку dataset
 target_link_libraries(dataset_value_test PRIVATE dataset gtest gtest_main)
 add_test(NAME dataset_value_test COMMAND dataset_value_test)
+
+# Добавляем сборку и регистрацию нового теста dataset_test
+target_link_libraries(dataset_test PRIVATE dataset gtest gtest_main)
+add_test(NAME dataset_test COMMAND dataset_test)

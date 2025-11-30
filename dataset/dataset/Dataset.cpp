@@ -2,22 +2,58 @@
 #include <fstream>
 #include <sstream>
 
+/**
+ * @brief Добавить запись в набор данных.
+ *
+ * Переданный объект DatasetValue перемещается во внутренний контейнер.
+ *
+ * @param d Добавляемый DatasetValue (перемещается).
+ */
 void Dataset::addRow(DatasetValue d) {
     rows.push_back(std::move(d));
 }
 
+/**
+ * @brief Удалить все записи из набора данных.
+ */
 void Dataset::clearRows() {
     rows.clear();
 }
 
+/**
+ * @brief Вернуть константную ссылку на хранимые записи.
+ *
+ * @return Константная ссылка на вектор объектов DatasetValue.
+ */
 const vector<DatasetValue>& Dataset::getRows() const {
     return rows;
 }
 
+/**
+ * @brief Заменить хранимые записи на заданный вектор.
+ *
+ * Параметр перемещается во внутреннее хранилище.
+ *
+ * @param r Вектор объектов DatasetValue, передаваемый в собственность.
+ */
 void Dataset::setRows(vector<DatasetValue> r) {
     rows = std::move(r);
 }
 
+/**
+ * @brief Загрузить записи набора данных из CSV-файла.
+ *
+ * Функция ожидает, что первая строка — заголовок и пропускает её.
+ * Каждая последующая строка должна содержать следующие поля через запятую:
+ * row,day,dayOfWeek,date,pageLoads,uniqueVisitors,firstTimeVisitors,returningVisitors
+ *
+ * Числовые поля могут передаваться как строки и будут распарсены
+ * соответствующими конструкторами DatasetValue. Строки с неправильным
+ * количеством полей будут проигнорированы.
+ *
+ * @param filename Путь к CSV-файлу для чтения. Если файл не может быть
+ * открыт, набор данных останется пустым.
+ */
 void Dataset::fromCSV(const string &filename) {
     rows.clear();
     std::ifstream file(filename);
@@ -46,6 +82,15 @@ void Dataset::fromCSV(const string &filename) {
     file.close();
 }
 
+/**
+ * @brief Оператор вывода для Dataset.
+ *
+ * Записывает каждую сохранённую запись DatasetValue, по одной на строку.
+ *
+ * @param os Поток вывода.
+ * @param dv Набор данных для сериализации.
+ * @return Ссылка на поток вывода.
+ */
 std::ostream& operator<<(std::ostream& os, const Dataset& dv) {
     for (const auto& row : dv.getRows()) {
         os << row << std::endl;
