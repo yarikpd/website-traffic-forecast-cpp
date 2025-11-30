@@ -38,7 +38,7 @@
 ### Arch Linux / Manjaro
 
 ```bash
-sudo pacman -S --needed base-devel
+sudo pacman -S --needed base-devel cmake
 git clone https://github.com/yarikpd/website-traffic-forecast-cpp.git
 cd website-traffic-forecast-cpp
 cd build
