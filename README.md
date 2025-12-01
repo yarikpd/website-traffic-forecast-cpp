@@ -51,7 +51,7 @@ cmake --build .
 ## 🚀 Использование
 
 ```bash
-./traffic_forecast path/to/daily_visitors.csv [H] [m]
+./traffic_forecast path [H] [m]
 ```
 
 **Параметры:**
@@ -75,7 +75,7 @@ forecast.csv
 | Day      | Date      | Page Loads | Unique Visits | First Time Visits | Returning Visits | 
 |----------|-----------|------------|---------------|-------------------|------------------|
 | Friday   | 10/3/2014 | 3005       | 2,097         | 1,856             | 241              |
-| Saturday | 10/4/2014 | 2054       | 1,436         | "1,274            | 162              |
+| Saturday | 10/4/2014 | 2054       | 1,436         | 1,274             | 162              |
 | ...      | ...       | ...        | ...           | ...               | ...              |
 ---
 

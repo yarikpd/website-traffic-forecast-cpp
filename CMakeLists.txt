@@ -15,11 +15,42 @@ target_include_directories(dataset PUBLIC
     dataset/dataset
     dataset/dataset_value
 )
+target_link_libraries(
+    dataset PRIVATE
+        forecast_utils
+)
+
+add_library(
+    forecast STATIC
+        forecast/forecast.h
+        forecast/forecast.cpp
+)
+
+target_include_directories(forecast PUBLIC
+    forecast
+)
+target_link_libraries(
+    forecast PRIVATE
+        forecast_utils
+)
+
+add_library(
+    forecast_utils STATIC
+        forecast_utils/forecast_utils.h
+        forecast_utils/forecast_utils.cpp
+)
+
+target_include_directories(
+    forecast_utils PUBLIC
+        forecast_utils
+)
 
 add_executable(traffic_forecast main.cpp)
 target_link_libraries(
     traffic_forecast PRIVATE
         dataset
+        forecast
+        forecast_utils
 )
 
 # --- GoogleTest for unit tests ---

@@ -1,52 +1,7 @@
 #include "DatasetValue.h"
 #include <sstream>
 #include <ctime>
-
-/**
- * Преобразует строку формата "MM/DD/YYYY" в time_t.
- * Если парсинг не удаётся, возвращается time_t(0).
- * @param s дата в виде строки "MM/DD/YYYY" (например, "12/31/2020").
- * @return значение time_t, соответствующее полуночи указанного дня в локальном часовом поясе, либо 0 при ошибке.
- */
-time_t DatasetValue::parseDateString(const string &s) {
-    std::tm tm{};
-    std::istringstream iss(s);
-    int month = 0, day_ = 0, year = 0;
-    char sep1, sep2;
-    if (!(iss >> month >> sep1 >> day_ >> sep2 >> year)) {
-        return time_t(0);
-    }
-    if (month < 1) month = 1;
-    if (month > 12) month = 12;
-    if (day_ < 1) day_ = 1;
-    if (year < 1900) year = 1900;
-
-    tm.tm_mon = month - 1;
-    tm.tm_mday = day_;
-    tm.tm_year = year - 1900;
-    tm.tm_hour = 0;
-    tm.tm_min = 0;
-    tm.tm_sec = 0;
-    return mktime(&tm);
-}
-
-/**
- * Убирает запятые из строки и конвертирует результат в int.
- * Если преобразование не удаётся, возвращает 0.
- * @param s строка с числом, возможно с разделителями тысяч (запятая).
- */
-int DatasetValue::parseNumberString(const string &s) {
-    string t;
-    t.reserve(s.size());
-    for (char c: s) {
-        if (c != ',') t.push_back(c);
-    }
-    try {
-        return stoi(t);
-    } catch (...) {
-        return 0;
-    }
-}
+#include "forecast_utils.h"
 
 /**
  * Полный конструктор: дата и числовые поля как значения.

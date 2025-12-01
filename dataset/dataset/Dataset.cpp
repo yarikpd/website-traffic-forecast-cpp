@@ -1,6 +1,8 @@
 #include "Dataset.h"
 #include <fstream>
 #include <sstream>
+#include <iostream>
+using namespace std;
 
 /**
  * @brief Добавить запись в набор данных.
@@ -62,19 +64,22 @@ void Dataset::fromCSV(const string &filename) {
     std::getline(file, line);
     while (std::getline(file, line)) {
         std::istringstream iss(line);
-        string day, dateStr, pageLoadsStr, uniqueVisitorsStr, firstTimeVisitorsStr, returningVisitorsStr, row, dayOfWeek;
 
-        if (std::getline(iss, row, ',') &&
-            std::getline(iss, day, ',') &&
-            std::getline(iss, dayOfWeek, ',') &&
-            std::getline(iss, dateStr, ',') &&
-            std::getline(iss, pageLoadsStr, ',') &&
-            std::getline(iss, uniqueVisitorsStr, ',') &&
-            std::getline(iss, firstTimeVisitorsStr, ',') &&
-            std::getline(iss, returningVisitorsStr, ',')) {
+        vector<string> inputs;
+        string input;
+        while (std::getline(iss, input, ',')) {
+            if (input[0] == '"') {
+                string input2;
+                std::getline(iss, input2, ',');
+                inputs.push_back(input + input2);
+            } else {
+                inputs.push_back(input);
+            }
+        }
 
-            DatasetValue dv(day, stoi(dayOfWeek), dateStr, pageLoadsStr, uniqueVisitorsStr, firstTimeVisitorsStr,
-                            returningVisitorsStr);
+        if (inputs.size() >= 7) {
+            DatasetValue dv(inputs[1], stoi(inputs[2]), inputs[3], inputs[4], inputs[5], inputs[6], inputs[7]);
+
             rows.push_back(std::move(dv));
         }
     }
@@ -96,4 +101,14 @@ std::ostream& operator<<(std::ostream& os, const Dataset& dv) {
         os << row << std::endl;
     }
     return os;
+}
+
+// TODO: add documentation
+size_t Dataset::size() const {
+    return rows.size();
+}
+
+// TODO: add documentation
+DatasetValue Dataset::getRow(const size_t index) const {
+    return rows[index];
 }

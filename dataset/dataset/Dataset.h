@@ -61,6 +61,12 @@ public:
      * @param filename Путь к CSV-файлу для чтения.
      */
     void fromCSV(const string &filename);
+
+    // TODO: add documentation
+    [[nodiscard]] size_t size() const;
+
+    // TODO: add documentation
+    [[nodiscard]] DatasetValue getRow(size_t index) const;
 };
 
 /**
