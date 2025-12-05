@@ -1,4 +1,6 @@
 #include "forecast.h"
+
+#include <cmath>
 #include <iostream>
 #include "forecast_utils.h"
 
@@ -92,6 +94,23 @@ vector<int> exponentialSmoothing(
     return forecastedValues;
 }
 
+double WAPETest(
+    const vector<int>& real,
+    const vector<int>& forecast
+) {
+    const size_t len = min(real.size(), forecast.size());
+    double errorSum = 0.0;
+    double weightSum = 0.0;
+
+    for (size_t i = 0; i < len; ++i) {
+        errorSum += fabs(real[i] - forecast[i]);
+        weightSum += fabs(real[i]);
+    }
+
+    if (weightSum == 0.0) return NAN;
+    return errorSum / weightSum * 100.0;
+}
+
 /**
  * @brief Подбирает лучшие коэффициенты сглаживания по средней абсолютной ошибке.
  *
@@ -122,11 +141,11 @@ SmoothingOdds betterCoefficient(
     }
 
     for (int intAlpha = 1; intAlpha < 10; intAlpha += 1) {
-        double alpha = intAlpha / 10.0;
+        const double alpha = intAlpha / 10.0;
         for (int intBeta = 1; intBeta < 10; intBeta += 1) {
-            double beta = intBeta / 10.0;
+            const double beta = intBeta / 10.0;
             for (int intGamma = 1; intGamma < 10; intGamma += 1) {
-                double gamma = intGamma / 10.0;
+                const double gamma = intGamma / 10.0;
                 vector<int> forecast = exponentialSmoothing(
                     yData,
                     alpha,
@@ -141,11 +160,7 @@ SmoothingOdds betterCoefficient(
                     continue;
                 }
 
-                double error = 0.0;
-                for (size_t i = 0; i < forecast.size(); ++i) {
-                    error += abs(forecast[i] - realForecast[i]);
-                }
-                error /= static_cast<double>(forecast.size());
+                double error = WAPETest(realForecast, forecast);
 
                 if (error < minError) {
                     minError = error;
@@ -160,6 +175,7 @@ SmoothingOdds betterCoefficient(
     return SmoothingOdds{
         bestAlpha,
         bestBeta,
-        bestGamma
+        bestGamma,
+        minError
     };
 }

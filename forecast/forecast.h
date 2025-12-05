@@ -21,12 +21,13 @@ struct SmoothingComponents {
  * @brief Набор коэффициентов сглаживания.
  *
  * alpha — коэффициент уровня, beta — коэффициент тренда, gamma — коэффициент
- * сезонности.
+ * сезонности, WAPETest — значение ошибки WAPE для подобранных коэффициентов.
  */
 struct SmoothingOdds {
     double alpha;
     double beta;
     double gamma;
+    double WAPETest;
 };
 
 /**

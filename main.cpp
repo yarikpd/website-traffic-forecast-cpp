@@ -125,17 +125,21 @@ int main(const int argc, char** argv) {
     cout << "Сезоны m: " << m << endl;
     cout << "Количество прогнозируемых точек H: " << H << endl;
     cout << "Page Loads коэффициенты: alpha=" << pageLoadsOdds.alpha
-         << ", beta=" << pageLoadsOdds.beta
-         << ", gamma=" << pageLoadsOdds.gamma << endl;
+        << ", beta=" << pageLoadsOdds.beta
+        << ", gamma=" << pageLoadsOdds.gamma
+        << ", WAPETest=" << pageLoadsOdds.WAPETest << endl;
     cout << "Unique Visitors коэффициенты: alpha=" << uniqueVisitorsOdds.alpha
-         << ", beta=" << uniqueVisitorsOdds.beta
-        << ", gamma=" << uniqueVisitorsOdds.gamma << endl;
+        << ", beta=" << uniqueVisitorsOdds.beta
+        << ", gamma=" << uniqueVisitorsOdds.gamma
+        << ", WAPETest=" << uniqueVisitorsOdds.WAPETest << endl;
     cout << "First Time Visitors коэффициенты: alpha=" << firstTimeVisitsOdds.alpha
-         << ", beta=" << firstTimeVisitsOdds.beta
-         << ", gamma=" << firstTimeVisitsOdds.gamma << endl;
+        << ", beta=" << firstTimeVisitsOdds.beta
+        << ", gamma=" << firstTimeVisitsOdds.gamma
+        << ", WAPETest=" << firstTimeVisitsOdds.WAPETest << endl;
     cout << "Returning Visitors коэффициенты: alpha=" << returningVisitsOdds.alpha
-         << ", beta=" << returningVisitsOdds.beta
-         << ", gamma=" << returningVisitsOdds.gamma << endl;
+        << ", beta=" << returningVisitsOdds.beta
+        << ", gamma=" << returningVisitsOdds.gamma
+        << ", WAPETest=" << returningVisitsOdds.WAPETest << endl;
 
     return 0;
 }

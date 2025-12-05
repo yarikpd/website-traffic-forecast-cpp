@@ -4,3 +4,4 @@ build
 .env
 .idea
 Testing
+forecast.csv
