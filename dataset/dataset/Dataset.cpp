@@ -103,12 +103,26 @@ std::ostream& operator<<(std::ostream& os, const Dataset& dv) {
     return os;
 }
 
-// TODO: add documentation
+/**
+ * @brief Вернуть количество записей в наборе данных.
+ *
+ * Возвращает размер внутреннего контейнера rows.
+ *
+ * @return Количество элементов в наборе.
+ */
 size_t Dataset::size() const {
     return rows.size();
 }
 
-// TODO: add documentation
+/**
+ * @brief Получить копию записи по указанному индексу.
+ *
+ * Обратите внимание: при выходе индекса за границы возможен выброс исключения
+ * или неопределённое поведение при прямом использовании operator[].
+ *
+ * @param index Индекс записи (0-based).
+ * @return Копия объекта DatasetValue.
+ */
 DatasetValue Dataset::getRow(const size_t index) const {
     return rows[index];
 }

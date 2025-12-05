@@ -42,10 +42,24 @@ std::ostream& printVector(std::ostream& os, const std::vector<T>& v, const std::
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v);
 
-// TODO: add documentation
-string nextDayString(string currentDay);
+/**
+ * @brief Возвращает название следующего дня недели на английском.
+ *
+ * Ожидается, что входная строка содержит одно из значений:
+ * Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday.
+ * Если значение неизвестно, возвращается "Monday" по умолчанию.
+ *
+ * @param currentDay Название текущего дня недели на английском (передаётся по ссылке).
+ * @return Название следующего дня недели на английском.
+ */
+string nextDayString(const string& currentDay);
 
-// TODO: add documentation
+/**
+ * @brief Прибавляет к времени один календарный день (24 часа).
+ *
+ * @param currentDate Временная метка time_t.
+ * @return time_t, соответствующий следующему дню (currentDate + 24*60*60).
+ */
 time_t nextDayTimeT(time_t currentDate);
 
 #endif

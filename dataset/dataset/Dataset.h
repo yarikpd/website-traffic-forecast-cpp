@@ -62,10 +62,22 @@ public:
      */
     void fromCSV(const string &filename);
 
-    // TODO: add documentation
+    /**
+     * @brief Вернуть количество записей в наборе данных.
+     *
+     * @return Количество элементов в наборе (размер внутреннего вектора rows).
+     */
     [[nodiscard]] size_t size() const;
 
-    // TODO: add documentation
+    /**
+     * @brief Получить копию записи по индексу.
+     *
+     * Если индекс выходит за границы, поведение соответствует стандартному
+     * оператору доступа вектора (возможен выброс исключения или UB при использовании operator[]).
+     *
+     * @param index Позиция требуемой записи (0-based).
+     * @return Копия объекта DatasetValue в указанной позиции.
+     */
     [[nodiscard]] DatasetValue getRow(size_t index) const;
 };
 

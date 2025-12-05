@@ -8,12 +8,13 @@ using namespace std;
 
 int main(const int argc, char** argv) {
     if (argc<2){
-        cerr<<"Использование: "<<argv[0]<<" <csv_path> [H=30] [season_m=7]\n";
+        cerr << "Использование: " << argv[0] << " <csv_path> [output_path=forecast.csv] [H=30] [season_m=7]\n";
         return 1;
     }
     const string path = argv[1];
-    const int H = (argc>=3? stoi(argv[2]) : 30);
-    const int m = (argc>=4? stoi(argv[3]) : 7);
+    const string outputPath = (argc>=3? argv[2] : "forecast.csv");
+    const int H = (argc>=4? stoi(argv[3]) : 30);
+    const int m = (argc>=5? stoi(argv[4]) : 7);
 
     cout << "Загрузка датасета из CSV..." << endl;
     Dataset dataset;
@@ -37,7 +38,6 @@ int main(const int argc, char** argv) {
         returningVisitsData.push_back(row.getReturningVisitors());
     }
 
-    cout << pageLoadsData << endl; // TODO: delete debug
     auto pageLoadsOdds = betterCoefficient(pageLoadsData, m);
     auto uniqueVisitorsOdds = betterCoefficient(uniqueVisitorsData, m);
     auto firstTimeVisitsOdds = betterCoefficient(firstTimeVisitsData, m);
@@ -52,7 +52,6 @@ int main(const int argc, char** argv) {
         H
     );
 
-    cout << pageLoadsForecast << endl; //TODO: delete debug
 
     vector<int> uniqueVisitorsForecast = exponentialSmoothing(
         uniqueVisitorsData,
@@ -109,15 +108,15 @@ int main(const int argc, char** argv) {
         });
     }
 
-    std::ofstream outFile("forecast.csv");
+    std::ofstream outFile(outputPath);
     outFile << "Day,Date,Page Loads,Unique Visitors,First Time Visitors, Returning Visitors\n";
-    for (const auto& entry : forecast) {
-        outFile << entry.day << ','
-                << std::put_time(std::localtime(&entry.date), "%m/%d/%Y") << ','
-                << entry.pageLoads << ','
-                << entry.uniqueVisitors << ','
-                << entry.firstTimeVisitors << ','
-                << entry.returningVisitors << '\n';
+    for (const auto&[day, date, pageLoads, uniqueVisitors, firstTimeVisitors, returningVisitors] : forecast) {
+        outFile << day << ','
+                << std::put_time(std::localtime(&date), "%m/%d/%Y") << ','
+                << pageLoads << ','
+                << uniqueVisitors << ','
+                << firstTimeVisitors << ','
+                << returningVisitors << '\n';
     }
 
     cout << "Прогноз сохранён в forecast.csv" << endl;

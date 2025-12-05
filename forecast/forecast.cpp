@@ -2,7 +2,13 @@
 #include <iostream>
 #include "forecast_utils.h"
 
-// TODO: add documentation
+/**
+ * @brief Выполняет экспоненциальное сглаживание с компонентами уровень/тренд/сезонность.
+ *
+ * Детальная реализация находится в заголовке. Функция рассчитывает начальные
+ * значения уровня и тренда по первым 2*seasonLength точкам, затем итеративно
+ * обновляет компоненты и формирует прогноз для forecastLength шагов.
+ */
 vector<int> exponentialSmoothing(
     vector<int> y,
     const double alpha,
@@ -26,7 +32,8 @@ vector<int> exponentialSmoothing(
     }
     startingTrend /= static_cast<double>(seasonLength);
     startingLevel /= static_cast<double>(seasonLength);
-    // startingTrend = min(1e-6, startingTrend);
+    startingTrend = max(0.0, startingTrend);
+    startingLevel = max(0.0, startingLevel);
 
     auto currentValue = static_cast<double>(y[0]);
     const double zeroLevel = alpha * currentValue + (1 - alpha) * (startingLevel + startingTrend);
@@ -51,15 +58,15 @@ vector<int> exponentialSmoothing(
 
         double level = alpha * (currentValue / (t >= seasonLength ? components[t - seasonLength]: components[0]).season) +
                        (1 - alpha) * (components[t - 1].level + components[t - 1].trend);
-        // level = min(1e-6, level);
+        level = max(0.0, level);
 
         double trend = beta * (level - components[t - 1].level) +
                        (1 - beta) * components[t - 1].trend;
-        // trend = min(trend, 1e-6);
+        trend = max(trend, 0.0);
 
         double season = gamma * (currentValue / level) +
                         (1 - gamma) * (t >= seasonLength ? components[t - seasonLength] : components[0]).season;
-        // season = min(1e-6, season);
+        season = max(0.0, season);
 
         if (t >= originalSize) {
             const int forecastedValue = static_cast<int>(
@@ -78,7 +85,6 @@ vector<int> exponentialSmoothing(
         ));
     }
 
-    // TODO: fix possible negative forecasted values
     vector<int> forecastedValues;
     for (size_t t = originalSize; t < y.size(); ++t) {
         forecastedValues.push_back(y[t]);
@@ -86,7 +92,14 @@ vector<int> exponentialSmoothing(
     return forecastedValues;
 }
 
-// TODO: add documentation
+/**
+ * @brief Подбирает лучшие коэффициенты сглаживания по средней абсолютной ошибке.
+ *
+ * Функция использует простую переборную стратегию по дискретным значениям
+ * коэффициентов от 0.1 до 0.9 с шагом 0.1. Для каждой тройки коэффициентов
+ * строится прогноз для последних seasonLength точек и вычисляется средняя
+ * абсолютная ошибка. Возвращается тройка коэффициентов с минимальной ошибкой.
+ */
 SmoothingOdds betterCoefficient(
     vector<int> y,
     const int seasonLength

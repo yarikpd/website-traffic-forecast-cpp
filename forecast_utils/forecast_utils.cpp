@@ -50,7 +50,12 @@ int parseNumberString(const string &s) {
     }
 }
 
-// TODO: add documentation
+/**
+ * @brief Выводит содержимое вектора в формате [a, b, c].
+ *
+ * Функция использует operator<< для каждого элемента. Поддерживает любой тип T,
+ * для которого определён вывод в поток.
+ */
 template<typename T>
 std::ostream& printVector(std::ostream& os, const std::vector<T>& v, const std::string& sep) {
     os << '[';
@@ -62,7 +67,9 @@ std::ostream& printVector(std::ostream& os, const std::vector<T>& v, const std::
     return os;
 }
 
-// TODO: add documentation
+/**
+ * @brief Перегрузка operator<< для std::vector<T> через printVector.
+ */
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     return printVector(os, v);
@@ -77,8 +84,12 @@ template std::ostream& operator<< <double>(std::ostream& os, const std::vector<d
 template std::ostream& printVector<std::string>(std::ostream& os, const std::vector<std::string>& v, const std::string& sep);
 template std::ostream& operator<< <std::string>(std::ostream& os, const std::vector<std::string>& v);
 
-// TODO: add documentation
-string nextDayString(const string currentDay) {
+/**
+ * @brief Возвращает название следующего дня недели (англ.).
+ *
+ * Если вход неизвестен, возвращает "Monday" по умолчанию.
+ */
+string nextDayString(const string& currentDay) {
     if (currentDay == "Monday") return "Tuesday";
     if (currentDay == "Tuesday") return "Wednesday";
     if (currentDay == "Wednesday") return "Thursday";
@@ -89,7 +100,9 @@ string nextDayString(const string currentDay) {
     return "Monday";
 }
 
-// TODO: add documentation
+/**
+ * @brief Возвращает time_t, увеличенный на один день (24 часа).
+ */
 time_t nextDayTimeT(const time_t currentDate) {
     return currentDate + 24 * 60 * 60;
 }
