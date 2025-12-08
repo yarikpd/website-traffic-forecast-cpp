@@ -108,70 +108,97 @@ time_t nextDayTimeT(const time_t currentDate) {
     return currentDate + 24 * 60 * 60;
 }
 
-// TODO: add docs
+/**
+ * @brief Разбирает аргументы командной строки.
+ *
+ * Обрабатывает все поддерживаемые параметры командной строки и возвращает
+ * структуру Args с заполненными значениями. При ошибках устанавливает
+ * флаг has_error и выводит сообщение об ошибке в stderr.
+ *
+ * @param argc Количество аргументов командной строки
+ * @param argv Массив строк аргументов командной строки
+ * @return Структура Args с разобранными параметрами
+ */
 Args parseArgs(const int argc, char** argv) {
     SeedKey seedKey;
     if (argc<2){
         cerr << "Использование: " << argv[0] << " <csv_path>\n";
         cerr << "Для справки используйте: " << argv[0] << " --help\n";
-        return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+        return Args{"", "", 0, 0, false, "", false, "", false, {}, true, SeedCryptor(seedKey)};
     }
     const string path = argv[1];
     string outputPath = "forecast.csv";
     int H = 30;
     int m = 7;
-    bool crypt = false;
+    bool decrypt = false;
+    string decryptOutputPath;
+    bool encryptFile = false;
+    string encryptOutputPath;
 
     for (int i=1; i<argc; ++i){
         string arg = argv[i];
         if (arg == "--help" || arg == "-h"){
-            return Args{"", "", 0, 0, false, true, {}, false, SeedCryptor(seedKey)};
+            return Args{"", "", 0, 0, false, "", false, "", true, {}, false, SeedCryptor(seedKey)};
         }
         if (arg == "--output"){
             if (i + 1 >= argc) {
                 cerr << "Ошибка: отсутствует значение для параметра --output\n";
-                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+                return Args{"", "", 0, 0, false, "", false, "", false, {}, true, SeedCryptor(seedKey)};
             }
 
             outputPath = argv[++i];
         } else if (arg == "--H"){
             if (i + 1 >= argc) {
                 cerr << "Ошибка: отсутствует значение для параметра --H\n";
-                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+                return Args{"", "", 0, 0, false, "", false, "", false, {}, true, SeedCryptor(seedKey)};
             }
 
             H = stoi(argv[++i]);
         } else if (arg == "--season_m"){
             if (i + 1 >= argc) {
                 cerr << "Ошибка: отсутствует значение для параметра --season_m\n";
-                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+                return Args{"", "", 0, 0, false, "", false, "", false, {}, true, SeedCryptor(seedKey)};
             }
 
             m = stoi(argv[++i]);
         } else if (arg == "--crypt"){
             if (i + 1 >= argc) {
                 cerr << "Ошибка: отсутствует значение для параметра --crypt\n";
-                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+                return Args{"", "", 0, 0, false, "", false, "", false, {}, true, SeedCryptor(seedKey)};
             }
 
             string keyStr = argv[++i];
             seedKey = SeedKey(keyStr);
-            crypt = true;
         } else if (arg == "--newCryptKey") {
             if (i + 1 >= argc) {
                 cerr << "Ошибка: отсутствует значение для параметра --newCryptKey\n";
-                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+                return Args{"", "", 0, 0, false, "", false, "", false, {}, true, SeedCryptor(seedKey)};
             }
 
             string keyFilePath = argv[++i];
             seedKey = SeedKey::generateRandom();
-            crypt = true;
             if (seedKey.saveToFile(keyFilePath)) {
                 cout << "Новый ключ шифрования сохранён в " << keyFilePath << endl;
             } else {
                 cerr << "Ошибка при сохранении ключа в " << keyFilePath << endl;
-                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+                return Args{"", "", 0, 0, false, "", false, "", false, {}, true, SeedCryptor(seedKey)};
             }
+        } else if (arg == "--decrypt") {
+            if (i + 1 >= argc) {
+                cerr << "Ошибка: отсутствует значение для параметра --decrypt\n";
+                return Args{"", "", 0, 0, false, "", false, "", false, {}, true, SeedCryptor(seedKey)};
+            }
+
+            decryptOutputPath = argv[++i];
+            decrypt = true;
+        } else if (arg == "--encrypt") {
+            if (i + 1 >= argc) {
+                cerr << "Ошибка: отсутствует значение для параметра --encrypt\n";
+                return Args{"", "", 0, 0, false, "", false, "", false, {}, true, SeedCryptor(seedKey)};
+            }
+
+            encryptOutputPath = argv[++i];
+            encryptFile = true;
         }
     }
 
@@ -180,7 +207,10 @@ Args parseArgs(const int argc, char** argv) {
         outputPath,
         H,
         m,
-        crypt,
+        decrypt,
+        decryptOutputPath,
+        encryptFile,
+        encryptOutputPath,
         false,
         seedKey,
         false,

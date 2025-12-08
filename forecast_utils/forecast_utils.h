@@ -63,20 +63,45 @@ string nextDayString(const string& currentDay);
  */
 time_t nextDayTimeT(time_t currentDate);
 
-// TODO: add docs
+/**
+ * @brief Структура для хранения аргументов командной строки.
+ *
+ * Содержит все параметры, переданные программе через командную строку,
+ * включая пути к файлам, параметры прогнозирования и настройки шифрования.
+ */
 struct Args {
-    string csv_path;
-    string output_path;
-    int H;
-    int season_m;
-    bool crypt;
-    bool help;
-    SeedKey crypt_key;
-    bool has_error;
-    SeedCryptor cryptor;
+    string csv_path;              ///< Путь к входному CSV файлу с данными
+    string output_path;           ///< Путь к выходному файлу для сохранения прогноза
+    int H;                        ///< Горизонт прогнозирования (количество точек)
+    int season_m;                 ///< Длина сезона для экспоненциального сглаживания
+    bool decrypt;                 ///< Флаг режима расшифровки файла
+    string decrypt_output_path;   ///< Путь к выходному файлу при расшифровке
+    bool encrypt_file;            ///< Флаг режима шифрования файла
+    string encrypt_output_path;   ///< Путь к выходному файлу при шифровании
+    bool help;                    ///< Флаг запроса справки
+    SeedKey crypt_key;            ///< Ключ шифрования SEED
+    bool has_error;               ///< Флаг ошибки при парсинге аргументов
+    SeedCryptor cryptor;          ///< Объект криптора для шифрования/расшифровки
 };
 
-// TODO: add docs
+/**
+ * @brief Разбирает аргументы командной строки.
+ *
+ * Обрабатывает следующие параметры:
+ * - csv_path: путь к входному CSV файлу (обязательный)
+ * - --output <path>: путь к выходному файлу (по умолчанию "forecast.csv")
+ * - --H <n>: горизонт прогнозирования (по умолчанию 30)
+ * - --season_m <n>: длина сезона (по умолчанию 7)
+ * - --crypt <key_file>: путь к файлу с ключом шифрования
+ * - --newCryptKey <key_file>: генерация нового ключа и сохранение в файл
+ * - --decrypt <output_file>: расшифровка файла csv_path в output_file
+ * - --encrypt <output_file>: шифрование файла csv_path в output_file
+ * - --help, -h: вывод справки
+ *
+ * @param argc Количество аргументов командной строки
+ * @param argv Массив строк аргументов командной строки
+ * @return Структура Args с разобранными параметрами
+ */
 Args parseArgs(int argc, char** argv);
 
 #endif

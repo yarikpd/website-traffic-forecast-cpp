@@ -4,5 +4,5 @@ build
 .env
 .idea
 Testing
-forecast.csv
+*forecast.csv
 crypt.key

@@ -13,14 +13,98 @@ int main(const int argc, char** argv) {
         return 1;
     }
     if (args.help) {
-        cout << "Использование: " << argv[0] << " <csv_path> [--output <output_path>] [--H <forecast_horizon>] [--season_m <season_length>] [--crypt <key>] [--newCryptKey <key_file>]\n";
+        cout << "Использование: " << argv[0] << " <csv_path> [--output <output_path>] [--H <forecast_horizon>] [--season_m <season_length>] [--crypt <key>] [--newCryptKey <key_file>] [--decrypt <output_file>] [--encrypt <output_file>]\n";
         cout << "Параметры:\n";
         cout << "  <csv_path>            Путь к входному CSV файлу с данными.\n";
-        cout << "  --output <output_path> Путь к выход ному CSV файлу для сохранения прогноза (по умолчанию forecast.csv).\n";
+        cout << "  --output <output_path> Путь к выходному CSV файлу для сохранения прогноза (по умолчанию forecast.csv).\n";
         cout << "  --H <forecast_horizon> Количество точек для прогноза (по умолчанию 30).\n";
         cout << "  --season_m <season_length> Длина сезона для экспоненциального сглаживания (по умолчанию 7).\n";
-        cout << "  --crypt <key>         Ключ для расшифровки входного CSV файла.\n";
+        cout << "  --crypt <key>         Путь к файлу ключа для шифрования выходного CSV файла.\n";
         cout << "  --newCryptKey <key_file> Генерирует новый ключ шифрования и сохраняет его в указанный файл.\n";
+        cout << "  --decrypt <output_file> Расшифровывает файл по пути csv_path и сохраняет результат в output_file.\n";
+        cout << "  --encrypt <output_file> Шифрует файл по пути csv_path и сохраняет результат в output_file.\n";
+        return 0;
+    }
+
+    // Режим расшифровки файла
+    if (args.decrypt) {
+        if (!args.crypt_key.isValid()) {
+            cerr << "Ошибка: для расшифровки необходимо указать ключ с помощью --crypt <key_file>\n";
+            return 1;
+        }
+
+        cout << "Расшифровка файла " << args.csv_path << "..." << endl;
+
+        // Читаем зашифрованный файл
+        std::ifstream inFile(args.csv_path, std::ios::binary);
+        if (!inFile) {
+            cerr << "Ошибка: не удалось открыть файл " << args.csv_path << endl;
+            return 1;
+        }
+
+        std::string encryptedContent((std::istreambuf_iterator<char>(inFile)),
+                                      std::istreambuf_iterator<char>());
+        inFile.close();
+
+        // Расшифровываем
+        SeedCryptor cryptor = args.cryptor;
+        std::string decryptedContent;
+        try {
+            decryptedContent = cryptor.decrypt(encryptedContent);
+        } catch (const std::exception& e) {
+            cerr << "Ошибка при расшифровке: " << e.what() << endl;
+            return 1;
+        }
+
+        // Записываем расшифрованный файл
+        std::ofstream outFile(args.decrypt_output_path);
+        if (!outFile) {
+            cerr << "Ошибка: не удалось создать файл " << args.decrypt_output_path << endl;
+            return 1;
+        }
+
+        outFile << decryptedContent;
+        outFile.close();
+
+        cout << "Файл успешно расшифрован и сохранён в " << args.decrypt_output_path << endl;
+        return 0;
+    }
+
+    // Режим шифрования файла
+    if (args.encrypt_file) {
+        if (!args.crypt_key.isValid()) {
+            cerr << "Ошибка: для шифрования необходимо указать ключ с помощью --crypt <key_file> или --newCryptKey <key_file>\n";
+            return 1;
+        }
+
+        cout << "Шифрование файла " << args.csv_path << "..." << endl;
+
+        // Читаем исходный файл
+        std::ifstream inFile(args.csv_path, std::ios::binary);
+        if (!inFile) {
+            cerr << "Ошибка: не удалось открыть файл " << args.csv_path << endl;
+            return 1;
+        }
+
+        std::string plainContent((std::istreambuf_iterator<char>(inFile)),
+                                  std::istreambuf_iterator<char>());
+        inFile.close();
+
+        // Шифруем
+        SeedCryptor cryptor = args.cryptor;
+        std::string encryptedContent = cryptor.encrypt(plainContent);
+
+        // Записываем зашифрованный файл
+        std::ofstream outFile(args.encrypt_output_path, std::ios::binary);
+        if (!outFile) {
+            cerr << "Ошибка: не удалось создать файл " << args.encrypt_output_path << endl;
+            return 1;
+        }
+
+        outFile << encryptedContent;
+        outFile.close();
+
+        cout << "Файл успешно зашифрован и сохранён в " << args.encrypt_output_path << endl;
         return 0;
     }
 
@@ -119,27 +203,16 @@ int main(const int argc, char** argv) {
         });
     }
 
-    SeedCryptor cryptor = args.cryptor;
-
     std::ofstream outFile(args.output_path);
     outFile << "Day,Date,Page Loads,Unique Visitors,First Time Visitors, Returning Visitors\n";
     for (const auto&[day, date, pageLoads, uniqueVisitors, firstTimeVisitors, returningVisitors] : forecast) {
-        if (!args.crypt) {
-            outFile << day << ','
-                    << std::put_time(std::localtime(&date), "%m/%d/%Y") << ','
-                    << pageLoads << ','
-                    << uniqueVisitors << ','
-                    << firstTimeVisitors << ','
-                    << returningVisitors << '\n';
-        } else {
-            outFile << day << ','
-                    << std::put_time(std::localtime(&date), "%m/%d/%Y") << ','
-                    << cryptor.encrypt(to_string(pageLoads)) << ','
-                    << cryptor.encrypt(to_string(uniqueVisitors)) << ','
-                    << cryptor.encrypt(to_string(firstTimeVisitors)) << ','
-                    << cryptor.encrypt(to_string(returningVisitors)) << '\n';
-        }
-    }
+        outFile << day << ','
+                << std::put_time(std::localtime(&date), "%m/%d/%Y") << ','
+                << pageLoads << ','
+                << uniqueVisitors << ','
+                << firstTimeVisitors << ','
+                << returningVisitors << '\n';
+   }
 
     cout << "Прогноз сохранён в forecast.csv" << endl;
 
