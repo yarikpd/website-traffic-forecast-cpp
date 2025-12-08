@@ -1,5 +1,6 @@
 #include "forecast_utils.h"
 
+#include <ctime>
 #include <sstream>
 #include <iostream>
 using namespace std;
@@ -105,4 +106,84 @@ string nextDayString(const string& currentDay) {
  */
 time_t nextDayTimeT(const time_t currentDate) {
     return currentDate + 24 * 60 * 60;
+}
+
+// TODO: add docs
+Args parseArgs(const int argc, char** argv) {
+    SeedKey seedKey;
+    if (argc<2){
+        cerr << "Использование: " << argv[0] << " <csv_path>\n";
+        cerr << "Для справки используйте: " << argv[0] << " --help\n";
+        return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+    }
+    const string path = argv[1];
+    string outputPath = "forecast.csv";
+    int H = 30;
+    int m = 7;
+    bool crypt = false;
+
+    for (int i=1; i<argc; ++i){
+        string arg = argv[i];
+        if (arg == "--help" || arg == "-h"){
+            return Args{"", "", 0, 0, false, true, {}, false, SeedCryptor(seedKey)};
+        }
+        if (arg == "--output"){
+            if (i + 1 >= argc) {
+                cerr << "Ошибка: отсутствует значение для параметра --output\n";
+                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+            }
+
+            outputPath = argv[++i];
+        } else if (arg == "--H"){
+            if (i + 1 >= argc) {
+                cerr << "Ошибка: отсутствует значение для параметра --H\n";
+                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+            }
+
+            H = stoi(argv[++i]);
+        } else if (arg == "--season_m"){
+            if (i + 1 >= argc) {
+                cerr << "Ошибка: отсутствует значение для параметра --season_m\n";
+                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+            }
+
+            m = stoi(argv[++i]);
+        } else if (arg == "--crypt"){
+            if (i + 1 >= argc) {
+                cerr << "Ошибка: отсутствует значение для параметра --crypt\n";
+                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+            }
+
+            string keyStr = argv[++i];
+            seedKey = SeedKey(keyStr);
+            crypt = true;
+        } else if (arg == "--newCryptKey") {
+            if (i + 1 >= argc) {
+                cerr << "Ошибка: отсутствует значение для параметра --newCryptKey\n";
+                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+            }
+
+            string keyFilePath = argv[++i];
+            seedKey = SeedKey::generateRandom();
+            crypt = true;
+            if (seedKey.saveToFile(keyFilePath)) {
+                cout << "Новый ключ шифрования сохранён в " << keyFilePath << endl;
+            } else {
+                cerr << "Ошибка при сохранении ключа в " << keyFilePath << endl;
+                return Args{"", "", 0, 0, false, false, {}, true, SeedCryptor(seedKey)};
+            }
+        }
+    }
+
+    return Args{
+        path,
+        outputPath,
+        H,
+        m,
+        crypt,
+        false,
+        seedKey,
+        false,
+        SeedCryptor(seedKey)
+    };
 }

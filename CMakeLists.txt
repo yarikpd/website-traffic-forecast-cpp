@@ -10,7 +10,6 @@ add_library(
         dataset/dataset_value/DatasetValue.h
         dataset/dataset_value/DatasetValue.cpp
 )
-
 target_include_directories(dataset PUBLIC
     dataset/dataset
     dataset/dataset_value
@@ -25,7 +24,6 @@ add_library(
         forecast/forecast.h
         forecast/forecast.cpp
 )
-
 target_include_directories(forecast PUBLIC
     forecast
 )
@@ -39,10 +37,23 @@ add_library(
         forecast_utils/forecast_utils.h
         forecast_utils/forecast_utils.cpp
 )
-
 target_include_directories(
     forecast_utils PUBLIC
         forecast_utils
+)
+target_link_libraries(
+    forecast_utils PUBLIC
+        crypt
+)
+
+add_library(
+    crypt STATIC
+        crypt/crypt.h
+        crypt/crypt.cpp
+)
+target_include_directories(
+    crypt PUBLIC
+        crypt
 )
 
 add_executable(traffic_forecast main.cpp)
@@ -51,6 +62,7 @@ target_link_libraries(
         dataset
         forecast
         forecast_utils
+        crypt
 )
 
 # --- GoogleTest for unit tests ---
@@ -79,3 +91,10 @@ add_test(NAME dataset_value_test COMMAND dataset_value_test)
 # Добавляем сборку и регистрацию нового теста dataset_test
 target_link_libraries(dataset_test PRIVATE dataset gtest gtest_main)
 add_test(NAME dataset_test COMMAND dataset_test)
+
+# Тесты для криптографии SEED
+add_executable(crypt_test
+        tests/test_crypt.cpp
+)
+target_link_libraries(crypt_test PRIVATE crypt gtest gtest_main)
+add_test(NAME crypt_test COMMAND crypt_test)

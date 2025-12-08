@@ -1,10 +1,11 @@
 #ifndef TRAFFIC_FORECAST_UTILS_H
 #define TRAFFIC_FORECAST_UTILS_H
 
-#include <ctime>
 #include <string>
 #include <vector>
 #include <ostream>
+
+#include "crypt.h"
 
 using namespace std;
 
@@ -61,5 +62,21 @@ string nextDayString(const string& currentDay);
  * @return time_t, соответствующий следующему дню (currentDate + 24*60*60).
  */
 time_t nextDayTimeT(time_t currentDate);
+
+// TODO: add docs
+struct Args {
+    string csv_path;
+    string output_path;
+    int H;
+    int season_m;
+    bool crypt;
+    bool help;
+    SeedKey crypt_key;
+    bool has_error;
+    SeedCryptor cryptor;
+};
+
+// TODO: add docs
+Args parseArgs(int argc, char** argv);
 
 #endif

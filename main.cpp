@@ -4,21 +4,32 @@
 #include "Dataset.h"
 #include "forecast.h"
 #include "forecast_utils.h"
+#include "crypt.h"
 using namespace std;
 
 int main(const int argc, char** argv) {
-    if (argc<2){
-        cerr << "Использование: " << argv[0] << " <csv_path> [output_path=forecast.csv] [H=30] [season_m=7]\n";
+    const auto args = parseArgs(argc, argv);
+    if (args.has_error) {
         return 1;
     }
-    const string path = argv[1];
-    const string outputPath = (argc>=3? argv[2] : "forecast.csv");
-    const int H = (argc>=4? stoi(argv[3]) : 30);
-    const int m = (argc>=5? stoi(argv[4]) : 7);
+    if (args.help) {
+        cout << "Использование: " << argv[0] << " <csv_path> [--output <output_path>] [--H <forecast_horizon>] [--season_m <season_length>] [--crypt <key>] [--newCryptKey <key_file>]\n";
+        cout << "Параметры:\n";
+        cout << "  <csv_path>            Путь к входному CSV файлу с данными.\n";
+        cout << "  --output <output_path> Путь к выход ному CSV файлу для сохранения прогноза (по умолчанию forecast.csv).\n";
+        cout << "  --H <forecast_horizon> Количество точек для прогноза (по умолчанию 30).\n";
+        cout << "  --season_m <season_length> Длина сезона для экспоненциального сглаживания (по умолчанию 7).\n";
+        cout << "  --crypt <key>         Ключ для расшифровки входного CSV файла.\n";
+        cout << "  --newCryptKey <key_file> Генерирует новый ключ шифрования и сохраняет его в указанный файл.\n";
+        return 0;
+    }
+
+    int H = args.H > 0 ? args.H : 30;
+    int m = args.season_m > 0 ? args.season_m : 7;
 
     cout << "Загрузка датасета из CSV..." << endl;
     Dataset dataset;
-    dataset.fromCSV(path);
+    dataset.fromCSV(args.csv_path);
     cout << "Датасет загружен, строк: " << dataset.size() << endl;
 
     if (dataset.size() < static_cast<size_t>(m * 2)) {
@@ -108,15 +119,26 @@ int main(const int argc, char** argv) {
         });
     }
 
-    std::ofstream outFile(outputPath);
+    SeedCryptor cryptor = args.cryptor;
+
+    std::ofstream outFile(args.output_path);
     outFile << "Day,Date,Page Loads,Unique Visitors,First Time Visitors, Returning Visitors\n";
     for (const auto&[day, date, pageLoads, uniqueVisitors, firstTimeVisitors, returningVisitors] : forecast) {
-        outFile << day << ','
-                << std::put_time(std::localtime(&date), "%m/%d/%Y") << ','
-                << pageLoads << ','
-                << uniqueVisitors << ','
-                << firstTimeVisitors << ','
-                << returningVisitors << '\n';
+        if (!args.crypt) {
+            outFile << day << ','
+                    << std::put_time(std::localtime(&date), "%m/%d/%Y") << ','
+                    << pageLoads << ','
+                    << uniqueVisitors << ','
+                    << firstTimeVisitors << ','
+                    << returningVisitors << '\n';
+        } else {
+            outFile << day << ','
+                    << std::put_time(std::localtime(&date), "%m/%d/%Y") << ','
+                    << cryptor.encrypt(to_string(pageLoads)) << ','
+                    << cryptor.encrypt(to_string(uniqueVisitors)) << ','
+                    << cryptor.encrypt(to_string(firstTimeVisitors)) << ','
+                    << cryptor.encrypt(to_string(returningVisitors)) << '\n';
+        }
     }
 
     cout << "Прогноз сохранён в forecast.csv" << endl;

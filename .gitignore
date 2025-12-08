@@ -5,3 +5,4 @@ build
 .idea
 Testing
 forecast.csv
+crypt.key
